@@ -8,19 +8,38 @@ class ApiUtils {
     }
 
     async getItems() {
-        let response = await fetch(this.endpoint + "/items", {
-            headers: this.defaultHeaders,
-        });
-        return response.json();
+        try {
+            let response = await fetch(this.endpoint + "/items", {
+                headers: this.defaultHeaders,
+            });
+            return response.json();
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     async addItem(itemBody) {
-        let response = await fetch(this.endpoint + "/items", {
-            method: 'POST',
-            headers: this.defaultHeaders,
-            body: JSON.stringify(itemBody)
-        });
-        return response.json();
+        try {
+            let response = await fetch(this.endpoint + "/items", {
+                method: 'POST',
+                headers: this.defaultHeaders,
+                body: JSON.stringify(itemBody)
+            });
+            return response.json();
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    async deleteItem(itemId) {
+        try {
+            await fetch (`${this.endpoint}/items/${itemId}`, {
+                method: 'DELETE',
+                headers: this.defaultHeaders
+            });
+        } catch (e) {
+            console.log(e);
+        }
     }
 }
 
