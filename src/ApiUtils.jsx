@@ -31,6 +31,19 @@ class ApiUtils {
         }
     }
 
+    async updateItem(itemBody) {
+        try {
+            let response = await fetch(this.endpoint + "/items/" + itemBody.id, {
+                method: 'PUT',
+                headers: this.defaultHeaders,
+                body: JSON.stringify(itemBody)
+            });
+            return response.json();
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     async deleteItem(itemId) {
         try {
             await fetch (`${this.endpoint}/items/${itemId}`, {
