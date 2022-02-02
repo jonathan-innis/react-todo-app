@@ -6,6 +6,7 @@ class Item extends React.Component {
     render() {
         return (
             <li>
+                <input type="checkbox" checked={this.props.completed} onChange={this.props.toggleCompleted.bind(this, this.props.id)}/>
                 <h3>{this.props.title}</h3>
                 <p>{this.props.description}</p>
                 <FontAwesomeIcon icon={faTrashAlt} onClick={this.props.deleteItem.bind(this, this.props.id)}/>

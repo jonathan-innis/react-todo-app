@@ -5,6 +5,7 @@ import ItemForm from "./ItemForm";
 import ItemModel from "./ItemModel";
 import Modal from "./Modal";
 import ItemUpdateForm from "./ItemUpdateForm";
+import {parsePriority} from './helper';
 
 class ListContext extends React.Component {
     constructor(props) {
@@ -13,17 +14,22 @@ class ListContext extends React.Component {
         this.handleCreateInputChange = this.handleCreateInputChange.bind(this);
         this.handleUpdateInputChange = this.handleUpdateInputChange.bind(this);
         this.updateItem = this.updateItem.bind(this);
+        this.toggleCompleted = this.toggleCompleted.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
         this.openUpdateModal = this.openUpdateModal.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
 
         this.state = {
             items: [],
-            itemToCreateTitle: "",
-            itemToCreateDescription: "",
-            itemToUpdateID: "",
-            itemToUpdateTitle: "",
-            itemToUpdateDescription: "",
+            createdItem: {
+                title: "",
+                description: "",
+                priority: "low"
+            },
+            updatedItem: {
+                title: "",
+                description: "",
+            },
             showModal: false,
         }
         this.apiUtils = new ApiUtils();
@@ -39,11 +45,24 @@ class ListContext extends React.Component {
     handleCreateInputChange(event) {
         if (event.target.name === "title") {
             this.setState({
-                itemToCreateTitle: event.target.value
+                createdItem: {
+                    ...this.state.createdItem,
+                    title: event.target.value
+                }
             })
         } else if (event.target.name === "description") {
             this.setState({
-                itemToCreateDescription: event.target.value
+                createdItem: {
+                    ...this.state.createdItem,
+                    description: event.target.value
+                }
+            })
+        } else if (event.target.name === "priority") {
+            this.setState({
+                createdItem: {
+                    ...this.state.createdItem,
+                    priority: event.target.value
+                }
             })
         }
     }
@@ -51,20 +70,26 @@ class ListContext extends React.Component {
     handleUpdateInputChange(event) {
         if (event.target.name === "title") {
             this.setState({
-                itemToUpdateTitle: event.target.value
+                updatedItem: {
+                    ...this.state.updatedItem,
+                    title: event.target.value
+                }
             })
         } else if (event.target.name === "description") {
             this.setState({
-                itemToUpdateDescription: event.target.value
+                updatedItem: {
+                    ...this.state.updatedItem,
+                    description: event.target.value
+                }
             })
         }
-        console.log(event.target.name)
     }
 
     async addItem(event) {
         event.preventDefault();
-        let item = new ItemModel(null, this.state.itemToCreateTitle, this.state.itemToCreateDescription);
-        item = await this.apiUtils.addItem(item);
+        let createdItem = {...this.state.createdItem};
+        createdItem.priority = parsePriority(createdItem.priority);
+        let item = await this.apiUtils.addItem(createdItem); 
         this.setState({
             items: [...this.state.items, item]
         })
@@ -72,13 +97,24 @@ class ListContext extends React.Component {
 
     async updateItem(event) {
         event.preventDefault();
-        let item = new ItemModel(this.state.itemToUpdateID, this.state.itemToUpdateTitle, this.state.itemToUpdateDescription);
-        console.log(item);
-        await this.apiUtils.updateItem(item);
+        let newItems = [...this.state.items];
+        let index = newItems.findIndex((item) => item.id === this.state.updatedItem.id);
+        let item = await this.apiUtils.updateItem(this.state.updatedItem);
+        newItems[index] = item;
         this.setState({
-            items: [...this.state.items.filter((i => i.id !== item.id)), item]
+            items: newItems,
         });
         this.toggleModal();
+    }
+
+    async toggleCompleted(id, _) {
+        let index = this.state.items.findIndex((item) => item.id === id);
+        let newItems = [...this.state.items];
+        newItems[index].completed = !newItems[index].completed;
+        await this.apiUtils.updateItem(newItems[index]);
+        this.setState({
+            items: newItems
+        })
     }
 
     async deleteItem(id, _) {
@@ -89,16 +125,11 @@ class ListContext extends React.Component {
     }
 
     openUpdateModal(id, _) {
-        let item = this.state.items.filter((item) => item.id === id);
-        console.log(item[0].title);
+        let index = this.state.items.findIndex((item) => item.id === id);
         this.setState({
-            itemToUpdateID: item[0].id,
-            itemToUpdateTitle: item[0].title,
-            itemToUpdateDescription: item[0].description,
+            updatedItem: this.state.items[index],
         });
-        console.log(this.state);
         this.toggleModal();
-        console.log(this.state);
     }
 
     toggleModal() {
@@ -114,13 +145,13 @@ class ListContext extends React.Component {
                 <ul>
                     {this.state.items.map((item) => {
                         return (
-                            <Item key={item.id} id={item.id} title={item.title} description={item.description} deleteItem={this.deleteItem} openUpdateModal={this.openUpdateModal}/>
+                            <Item key={item.id} id={item.id} title={item.title} description={item.description} completed={item.completed} toggleCompleted={this.toggleCompleted} deleteItem={this.deleteItem} openUpdateModal={this.openUpdateModal}/>
                         )
                     })}
                 </ul>
-                <ItemForm title={this.state.itemToCreateTitle} description={this.state.itemToCreateDescription} addItem={this.addItem} handleInputChange={this.handleCreateInputChange}/>
+                <ItemForm item={this.state.createdItem} addItem={this.addItem} handleInputChange={this.handleCreateInputChange}/>
                 <Modal show={this.state.showModal} toggle={this.toggleModal}>
-                    <ItemUpdateForm title={this.state.itemToUpdateTitle} description={this.state.itemToUpdateDescription} handleInputChange={this.handleUpdateInputChange} updateItem={this.updateItem}/>
+                    <ItemUpdateForm item={this.state.updatedItem} handleInputChange={this.handleUpdateInputChange} updateItem={this.updateItem}/>
                 </Modal>
             </div>
         )

@@ -5,8 +5,8 @@ class ItemUpdateForm extends React.Component {
         return(
             <div>
                 <form onSubmit={this.props.updateItem}>
-                    <input name="title" value={this.props.title} onChange={this.props.handleInputChange}/>
-                    <input name="description" value={this.props.description} onChange={this.props.handleInputChange}/>
+                    <input name="title" value={this.props.item.title} onChange={this.props.handleInputChange}/>
+                    <input name="description" value={this.props.item.description} onChange={this.props.handleInputChange}/>
                     <input type="submit" value="Update Item"/>
                 </form>
             </div>
