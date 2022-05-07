@@ -1,10 +1,12 @@
 import React from "react";
 import ApiUtils from "./ApiUtils";
-import Item from "./Item";
+import ListItem from "./ListItem";
 import ItemForm from "./ItemForm";
-import ItemModel from "./ItemModel";
 import Modal from "./Modal";
+import './ListContext.css';
 import ItemUpdateForm from "./ItemUpdateForm";
+import { faPlusCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {parsePriority} from './helper';
 
 class ListContext extends React.Component {
@@ -17,7 +19,8 @@ class ListContext extends React.Component {
         this.toggleCompleted = this.toggleCompleted.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
         this.openUpdateModal = this.openUpdateModal.bind(this);
-        this.toggleModal = this.toggleModal.bind(this);
+        this.toggleCreateModal = this.toggleCreateModal.bind(this);
+        this.toggleUpdateModal = this.toggleUpdateModal.bind(this);
 
         this.state = {
             items: [],
@@ -30,7 +33,8 @@ class ListContext extends React.Component {
                 title: "",
                 description: "",
             },
-            showModal: false,
+            showCreateModal: false,
+            showUpdateModal: false,
         }
         this.apiUtils = new ApiUtils();
     }
@@ -132,27 +136,35 @@ class ListContext extends React.Component {
         this.toggleModal();
     }
 
-    toggleModal() {
+    toggleCreateModal() {
         this.setState((state, ) => ({
-            showModal: !state.showModal
+            showCreateModal: !state.showCreateModal
+        }));
+    }
+
+    toggleUpdateModal() {
+        this.setState((state, ) => ({
+            showUpdateModal: !state.showUpdateModal
         }))
     }
 
     render() {
         return (
             <div>
-                <h1>Todo List</h1>
                 <ul>
                     {this.state.items.map((item) => {
                         return (
-                            <Item key={item.id} id={item.id} title={item.title} description={item.description} completed={item.completed} toggleCompleted={this.toggleCompleted} deleteItem={this.deleteItem} openUpdateModal={this.openUpdateModal}/>
+                            <ListItem key={item.id} id={item.id} title={item.title} description={item.description} completed={item.completed} toggleCompleted={this.toggleCompleted} deleteItem={this.deleteItem} openUpdateModal={this.openUpdateModal}/>
                         )
                     })}
                 </ul>
-                <ItemForm item={this.state.createdItem} addItem={this.addItem} handleInputChange={this.handleCreateInputChange}/>
-                <Modal show={this.state.showModal} toggle={this.toggleModal}>
+                <Modal show={this.state.showCreateModal} toggle={this.toggleCreateModal}>
+                    <ItemForm item={this.state.createdItem} addItem={this.addItem} handleInputChange={this.handleCreateInputChange}/>
+                </Modal>
+                <Modal show={this.state.showUpdateModal} toggle={this.toggleUpdateModal}>
                     <ItemUpdateForm item={this.state.updatedItem} handleInputChange={this.handleUpdateInputChange} updateItem={this.updateItem}/>
                 </Modal>
+                <FontAwesomeIcon className="add-item-icon" icon={faPlusCircle} onClick={this.toggleCreateModal}/>
             </div>
         )
     }

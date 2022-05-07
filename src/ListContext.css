@@ -1,0 +1,13 @@
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.add-item-icon {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    font-size: 30px;
+    cursor: pointer;
+    color: blue;
+}
